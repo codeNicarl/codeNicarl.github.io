@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #658de5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            opacity: 0; 
+            transition: opacity 0.5s;
+        }
+        .container {
+            text-align: center;
+            background: lightblue;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(20px);
+            transition: transform 0.5s, opacity 0.5s; 
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #555;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s; 
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.1); 
+        }
+    </style>
+</head>
+<body onload="fadeInBody()">
+    <div class="container">
+        <img src="img.jpg" width="200" height="200"></img>
+        <h1>Welcome to the Quiz Game!</h1>
+        <p>Output by Carl louie and Charwen</p>
+        <button onclick="startGame()">Start Game</button>
+        <button onclick="showRules()">How to Play</button>
+    </div>
+
+    <script>
+        function fadeInBody() {
+            document.body.style.opacity = '1'; 
+            document.querySelector('.container').style.transform = 'translateY(0)';
+        }
+
+        function startGame() {
+           
+            document.body.style.opacity = '0';
+            
+            setTimeout(function() {
+                window.location.href = 'Gocz1.html';
+            }, 500); 
+        }
+
+        function showRules() {
+            
+            document.body.style.opacity = '0';
+            
+            setTimeout(function() {
+                window.location.href = 'Gocz2.html';
+            }, 500); 
+        }
+    </script>
+</body>
+</html>
+

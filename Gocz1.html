@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz</title>
+    <style>
+       body {
+            font-family: Arial, sans-serif;
+            background-color: #658de5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: lightblue;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+        button, .timer {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .timer {
+            background-color: #444; /* Darker background for timer */
+            color: #ffd700; /* Gold color for timer text */
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .question, .choice {
+            padding: 15px;
+            margin-top: 20px;
+            background-color: #e8e8e8;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: left;
+            animation: slideIn 0.5s;
+        }
+        .choice label {
+            display: block;
+            padding: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .choice:hover label {
+            transform: scale(1.05);
+        }
+        .choice input[type="radio"] {
+            margin-right: 10px;
+        }
+        .correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .result {
+            font-size: 18px;
+            color: green;
+            margin-top: 20px;
+        }
+
+        progress-bar-container {
+    width: 100%;
+    background-color: #ccc;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.progress-bar {
+    height: 20px;
+    background-color: #4CAF50;
+    border-radius: 8px;
+    text-align: center;
+    line-height: 20px; /* Same as height for vertical alignment */
+    color: white;
+}
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate3d(0, -100%, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="readyScreen">
+            <img src="img2.jpg" width="200" height="200"></img>
+            <h1>Are you ready to start the quiz?</h1>
+            <h5>You have 15 minutes to answer 10 questions, goodluck!</h5>
+            <button onclick="startQuiz()">Start Quiz</button>
+            <button onclick="redirect()">No I'm not</button>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar" style="width: 0%;"></div>
+        
+
+        <div id="quizScreen" style="display: none;">
+            <div class="timer">15:00</div>
+            <div class="question"></div>
+            <div class="choices"></div>
+            <button id="nextButton" onclick="nextQuestion()" disabled>Next</button>
+        </div>
+        <div id="resultScreen" style="display: none;">
+            <div class="result"></div>
+            <button onclick="retryQuiz()">Try Again</button>
+            <button onclick="mainMenu()">Main Menu</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+        { q: "What does HTML stand for?", a: "Hyper Text Markup Language", choices: ["Home Tool Markup Language", "Hyperlinks and Text Markup Language", "Hyper Text Markup Language", "Hyper Tool Multi Language"] },
+            { q: "Which language runs in a web browser?", a: "JavaScript", choices: ["Java", "C++", "Python", "JavaScript"] },
+            { q: "What does CSS stand for?", a: "Cascading Style Sheets", choices: ["Central Style Sheets", "Cascading Style Sheets", "Cascading Simple Sheets", "Cars SUVs Sailboats"] },
+            { q: "What is the symbol used to denote an ID in CSS?", a: "#", choices: ["#", ".", "!", "/"] },
+            { q: "Which HTML tag is used to define an internal style sheet?", a: "style", choices: ["script", "css", "style", "link"] },
+            { q: "What is the correct HTML tag for inserting a line break?", a: "br", choices: ["br", "lb", "break", "hr"] },
+            { q: "Which HTML attribute specifies an alternate text for an image, if the image cannot be displayed?", a: "alt", choices: ["title", "src", "alt", "longdesc"] },
+            { q: "Which doctype is correct for HTML5?", a: "!DOCTYPE html", choices: ["!DOCTYPE HTML PUBLIC", "!DOCTYPE html", "!DOCTYPE", "!HTML"] },
+            { q: "What property is used to change the text color of an element?", a: "color", choices: ["fontcolor", "text-color", "color", "textstyle"] },
+            { q: "Which CSS property controls the text size?", a: "font-size", choices: ["text-size", "font-size", "text-style", "font-style"] }
+        ];
+        let currentQuestion = 0;
+        let score = 0;
+        let wrongAnswers = 0;
+        let timerInterval;
+
+        function startQuiz() {
+            document.getElementById("readyScreen").style.display = "none";
+            document.getElementById("quizScreen").style.display = "block";
+            startTimer();
+            displayQuestion();
+        }
+        
+        function startTimer() {
+            let timeRemaining = 15 * 60; // 15 minutes in seconds
+            timerInterval = setInterval(function() {
+                let minutes = Math.floor(timeRemaining / 60);
+                let seconds = timeRemaining % 60;
+                document.querySelector('.timer').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    endQuiz();
+                }
+                timeRemaining--;
+            }, 1000);
+        }
+
+        function redirect() {
+            
+            document.body.style.opacity = '0';
+            
+            setTimeout(function() {
+                window.location.href = 'index.html';
+            }, 500); 
+        }
+
+        function mainMenu() {
+            
+            document.body.style.opacity = '0';
+            
+            setTimeout(function() {
+                window.location.href = 'index.html';
+            }, 500); 
+        }
+
+
+        function displayQuestion() {
+            let quiz = questions[currentQuestion];
+            document.querySelector('.question').innerHTML = `<div>${quiz.q}</div>`;
+            let choicesHtml = '';
+            quiz.choices.forEach(function(choice) {
+                choicesHtml += `<div class="choice"><label><input type="radio" name="answer" value="${choice}" onclick="selectAnswer(this, '${choice}', '${quiz.a}');">${choice}</label></div>`;
+            });
+            document.querySelector('.choices').innerHTML = choicesHtml;
+            updateProgressBar();
+        }
+
+        function updateProgressBar() {
+    const progressBar = document.querySelector('.progress-bar');
+    const totalQuestions = questions.length;
+    const progressPercent = ((currentQuestion + 1) / totalQuestions) * 100;
+    progressBar.style.width = progressPercent + '%';
+    progressBar.textContent = Math.round(progressPercent) + '%';
+}
+
+
+        function selectAnswer(element, selectedAnswer, correctAnswer) {
+            let choices = document.querySelectorAll('.choice');
+            choices.forEach(choice => {
+                let radio = choice.querySelector('input[type="radio"]');
+                radio.disabled = true;
+                if (radio.value === correctAnswer) {
+                    choice.classList.add('correct');
+                }
+            });
+
+            if (selectedAnswer === correctAnswer) {
+                score++;
+                element.parentElement.parentElement.classList.add('correct');
+            } else {
+                wrongAnswers++;
+                element.parentElement.parentElement.classList.add('incorrect');
+            }
+
+            document.getElementById("nextButton").disabled = false;
+            if (wrongAnswers >= 3) {
+                endQuiz();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                displayQuestion();
+                updateProgressBar();
+            } else {
+                showResults();
+            }
+            document.getElementById("nextButton").disabled = true;
+        }
+
+        function showResults() {
+            clearInterval(timerInterval);
+            document.querySelector('.result').textContent = `Quiz Completed! Final Score: ${score}`;
+            document.getElementById("quizScreen").style.display = "none";
+            document.getElementById("resultScreen").style.display = "block";
+        }
+
+        function endQuiz() {
+            clearInterval(timerInterval);
+            document.querySelector('.result').textContent = `Ooops! too many wrong answers. Final Score: ${score}`;
+            document.getElementById("quizScreen").style.display = "none";
+            document.getElementById("resultScreen").style.display = "block";
+        }
+
+        function retryQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            wrongAnswers = 0;
+            document.getElementById("resultScreen").style.display = "none";
+            document.getElementById("quizScreen").style.display = "block";
+            displayQuestion();
+        }
+    </script>
+</body>
+</html>
+
+
+
